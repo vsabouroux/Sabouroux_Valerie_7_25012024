@@ -2,18 +2,17 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const booksRoutes = require("./routes/books");
 const userRoutes = require("./routes/user");
+const path = require("path");
 
 const mongoose = require("mongoose");
 
-const Book = require("./models/Book");
+// const Book = require("./models/Book");
 // const User = require(".") IMORTER LE CHEM POUR USER
 
 const app = express();
 // app.use(express.json()); //ou avec bodyParser pour accéder au coeur de la requete
 // avec "next" on passe de middleware au middleware suivant
 //Headers pour éviter des erreurs "CORS" Cela va permettre à l'application d'accéder à l'API ss pb
-
-app.use(bodyParser.json());
 
 mongoose.connect('mongodb+srv://sabourouxv:iN1nPKtuLUTCmuSP@cluster0.ckingbg.mongodb.net/?retryWrites=true&w=majority',
   { useNewUrlParser: true,
@@ -26,9 +25,12 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
     next();
-  });
+  }); 
+  
+app.use(bodyParser.json());
 
 app.use("/api/books", booksRoutes);
 app.use("/api/auth", userRoutes);
+app.use("/images",express.static(path.join(__dirname, "images")));
 
 module.exports = app;
