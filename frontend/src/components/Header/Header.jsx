@@ -16,7 +16,7 @@ function Header({ user, setUser }) {
   return (
     <header className={styles.Header}>
       <div className="container">
-        <img src={Logo} alt="logo mpm vieu grimoire" />
+        <img src={Logo} alt="logo mom vieux grimoire" />
         <ul>
           <li><NavLink to="/" end className={({ isActive }) => (isActive ? styles.activeLink : undefined)}>Accueil</NavLink></li>
           <li><NavLink to="/Ajouter" className={({ isActive }) => (isActive ? styles.activeLink : undefined)}>Ajouter un livre</NavLink></li>
