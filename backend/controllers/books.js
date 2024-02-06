@@ -105,3 +105,46 @@ exports.deleteBook = (req, res, next) => {
       res.status(400).json({ error });
     });
 };
+
+// ça ne MARCHE PAS ENCORE ! visiblement pb avec id ???
+exports.bestRatingBooks = async (req, res, next) => {
+  try {
+    //méthode "aggregate" pour regrouper et trier les livres par note moyenne
+    const bestRatedBooks = await Book.aggregate([
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          author: 1,
+          imageUrl: 1,
+          year: 1,
+          genre: 1,
+          ratings: 1,
+          averageRating: 1,
+        },
+      },
+      {
+        $addFields: {
+          totalRatings: { $size: "$ratings" },
+        },
+      },
+      {
+        $match: {
+          totalRatings: { $gt: 0 }, // Filtre les livres avec au moins une note
+        },
+      },
+      {
+        $sort: {
+          averageRating: -1,
+        },
+      },
+      {
+        $limit: 3, // Limite les résultats à 3 livres
+      },
+    ]);
+
+    res.status(200).json(bestRatedBooks);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
