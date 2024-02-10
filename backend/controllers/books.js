@@ -63,7 +63,7 @@ exports.modifyBook = (req, res, next) => {
     : { ...req.body };
   delete bookObjet._userId;
 
-  Book.findOne({ _id: req.params.id })
+  Book.findByIdAndUpdate ({ _id: req.params.id })
     .then((book) => {
       if (!book) {
         return res.status(404).json({ message: "Livre non trouvé !" });
@@ -106,45 +106,62 @@ exports.deleteBook = (req, res, next) => {
     });
 };
 
-// ça ne MARCHE PAS ENCORE ! visiblement pb avec id ???
-exports.bestRatingBooks = async (req, res, next) => {
+// //FONCTION CI-DESSOUS NE FONCTIONNE PAS !!! JE NAI PAS LES IDEES CLAIRES !!!
+exports.getBestRatedBooksForPage = async (req, res, next) => {
   try {
-    //méthode "aggregate" pour regrouper et trier les livres par note moyenne
-    const bestRatedBooks = await Book.aggregate([
-      {
-        $project: {
-          _id: 1,
-          title: 1,
-          author: 1,
-          imageUrl: 1,
-          year: 1,
-          genre: 1,
-          ratings: 1,
-          averageRating: 1,
-        },
-      },
-      {
-        $addFields: {
-          totalRatings: { $size: "$ratings" },
-        },
-      },
-      {
-        $match: {
-          totalRatings: { $gt: 0 }, // Filtre les livres avec au moins une note
-        },
-      },
-      {
-        $sort: {
-          averageRating: -1,
-        },
-      },
-      {
-        $limit: 3, // Limite les résultats à 3 livres
-      },
-    ]);
+    // Récupérer l'ID du livre actuel depuis les paramètres de la requête
+    const currentBookId = req.params.id;
+
+    // Récupérer les évaluations du livre actuel
+    const currentBook = await Book.findById(currentBookId);
+    const currentBookRatings = currentBook.ratings.map((rating) => rating.userId);
+
+    // Récupérer les 3 livres les mieux notés (à l'exclusion du livre actuel)
+    const bestRatedBooks = await Book.find({
+      _id: { $ne: currentBookId }, // Exclure le livre actuel
+      'ratings.userId': { $nin: currentBookRatings }, // Exclure les utilisateurs qui ont évalué le livre actuel
+    })
+      .sort({ 'averageRating': -1 }) // Trier par note moyenne décroissante
+      .limit(3); // Limiter les résultats à 3 livres
 
     res.status(200).json(bestRatedBooks);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error });
   }
+};
+
+exports.ratingBook = (req,res) => {
+  let userMessage = ""; // Variable pour stocker les messages spécifiques à l'utilisateur
+  //cherche le livre correspondant à l'identifiant
+  Book.findByIdAndUpdate({_id: req.params.id})
+  .then(book => {
+   // Vérifie si l'utilisateur a déjà noté le livre
+   const existingRating = book.ratings.find(rating => rating.userId === req.auth.userId);
+   if (existingRating) {
+     // Si l'utilisateur a déjà noté le livre, renvoie un message
+     userMessage = "Vous avez déjà noté ce livre.";
+     console.log(userMessage);
+   } else {
+     // Sinon, ajoute une nouvelle note au tableau ratings du livre
+     book.ratings.push({
+       userId: req.auth.userId,
+       grade: req.body.rating
+     });
+     userMessage = "Votre note a été validée."; // Message lorsque l'UI a noté un livre avec succès
+     console.log(userMessage);
+   }
+    //Calcul de la somme des notes
+    let totalRating = book.ratings.reduce((acc, rating) => acc + rating.grade, 0);
+    // Calcul de la moyenne des notes
+    book.averageRating =Math.round(totalRating / book.ratings.length);
+    console.log(book.averageRating);
+
+    return book.save();
+  })
+  .then(updatedBook => {
+    console.log("book saved:", updatedBook);
+    //Crée un nouvel objet pour le livre mis à jour
+    const newBook={...updatedBook.toObject() };
+    newBook._id = updatedBook._id.toString();
+  });
 };
