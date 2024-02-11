@@ -106,28 +106,12 @@ exports.deleteBook = (req, res, next) => {
     });
 };
 
-// //FONCTION CI-DESSOUS NE FONCTIONNE PAS !!! JE NAI PAS LES IDEES CLAIRES !!!
-exports.getBestRatedBooksForPage = async (req, res, next) => {
-  try {
-    // Récupérer l'ID du livre actuel depuis les paramètres de la requête
-    const currentBookId = req.params.id;
-
-    // Récupérer les évaluations du livre actuel
-    const currentBook = await Book.findById(currentBookId);
-    const currentBookRatings = currentBook.ratings.map((rating) => rating.userId);
-
-    // Récupérer les 3 livres les mieux notés (à l'exclusion du livre actuel)
-    const bestRatedBooks = await Book.find({
-      _id: { $ne: currentBookId }, // Exclure le livre actuel
-      'ratings.userId': { $nin: currentBookRatings }, // Exclure les utilisateurs qui ont évalué le livre actuel
-    })
-      .sort({ 'averageRating': -1 }) // Trier par note moyenne décroissante
-      .limit(3); // Limiter les résultats à 3 livres
-
-    res.status(200).json(bestRatedBooks);
-  } catch (error) {
-    res.status(500).json({ error });
-  }
+exports.getBestRatingBooks = (req, res, next) => {
+  Book.find()
+    .sort({averageRating: -1})// Trier par note moyenne décroissante
+    .limit(3) // Limiter les résultats à 3 livres
+    .then(bestRatedBook => res.status(200).json(bestRatedBook))
+    .catch(error => res.status(400).json({error}))
 };
 
 exports.ratingBook = (req,res) => {
@@ -142,7 +126,7 @@ exports.ratingBook = (req,res) => {
      userMessage = "Vous avez déjà noté ce livre.";
      console.log(userMessage);
    } else {
-     // Sinon, ajoute une nouvelle note au tableau ratings du livre
+     // Sinon, ajoute une nouvelle note au tableau ratings du livre. 
      book.ratings.push({
        userId: req.auth.userId,
        grade: req.body.rating
@@ -150,9 +134,9 @@ exports.ratingBook = (req,res) => {
      userMessage = "Votre note a été validée."; // Message lorsque l'UI a noté un livre avec succès
      console.log(userMessage);
    }
-    //Calcul de la somme des notes
+    //Calcul de la somme des notes - "acc" pour accumulateur (variable utilisée) pour accumuler la somme des notes des évaluations du livre
     let totalRating = book.ratings.reduce((acc, rating) => acc + rating.grade, 0);
-    // Calcul de la moyenne des notes
+    // Calcul de la moyenne des notes et uyilisation méthode "Math.round" pour arrondir à l'entier le plus proche
     book.averageRating =Math.round(totalRating / book.ratings.length);
     console.log(book.averageRating);
 
@@ -163,5 +147,13 @@ exports.ratingBook = (req,res) => {
     //Crée un nouvel objet pour le livre mis à jour
     const newBook={...updatedBook.toObject() };
     newBook._id = updatedBook._id.toString();
+      // Ajout champ `message` à la réponse pour transmettre le message à l'UI ???? je pense qu'il manque un truc coté client ???
+      res.status(200).json({ book: newBook, message: userMessage });
+      console.log(userMessage);
+    })
+    .catch(error => {
+      // Gestion des erreurs
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
   });
 };

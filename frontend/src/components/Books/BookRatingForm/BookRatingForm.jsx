@@ -1,5 +1,5 @@
 import * as PropTypes from 'prop-types';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import styles from './BookRatingForm.module.css';
@@ -19,6 +19,8 @@ function BookRatingForm({
       rating: 0,
     },
   });
+  const [message, setMessage] = useState(null); // Nouvel état pour le message ajouté le 11fev
+
   useEffect(() => {
     if (formState.dirtyFields.rating) {
       const rate = document.querySelector('input[name="rating"]:checked').value;
@@ -35,10 +37,12 @@ function BookRatingForm({
     if (update) {
       // eslint-disable-next-line no-underscore-dangle
       setBook({ ...update, id: update._id });
+      setMessage(update.message);// pour que s'affiche le message pour l'UI
     } else {
       // alert(update);
     }
   };
+
   return (
     <div className={styles.BookRatingForm}>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -48,6 +52,7 @@ function BookRatingForm({
         </div>
         {!userRated ? <button type="submit">Valider</button> : null}
       </form>
+      {message && <p>{message}</p>}
     </div>
   );
 }
