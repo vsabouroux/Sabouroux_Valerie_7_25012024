@@ -5,6 +5,8 @@ import * as PropTypes from 'prop-types';
 import styles from './Header.module.css';
 import Logo from '../../images/Logo.png';
 
+// eslint-disable-next-line spaced-comment
+//Ajout d'une PROP pour cacher le Header sur la page de connexion"showHeader"
 function Header({ user, setUser }) {
   const navigate = useNavigate();
   const disconnect = () => {
@@ -26,7 +28,6 @@ function Header({ user, setUser }) {
     </header>
   );
 }
-
 Header.propTypes = {
   user: PropTypes.shape({
     userId: PropTypes.string,

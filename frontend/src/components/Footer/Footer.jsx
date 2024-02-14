@@ -21,7 +21,6 @@ function Footer() {
       <p>Copyright 2022 - 2023</p>
       <p>Mentions légales</p>
     </footer>
-
   );
 }
 

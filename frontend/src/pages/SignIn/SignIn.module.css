@@ -85,6 +85,10 @@
 }
 
 @media all and (max-width: 500px) {
+    .Form img {
+        width: auto;
+   
+    }
     .Submit {
         flex-direction: column;
     }
