@@ -45,10 +45,10 @@ exports.getOneBook = (req, res, next) => {
       if (!book) {
         return res.status(404).json({ message: "Livre non trouvé !" });
       }
-      res.status(200).json(book);
+      return res.status(200).json(book);
     })
     .catch((error) => {
-      res.status(400).json({ error });
+      return res.status(400).json({ error });
     });
 };
 
@@ -110,8 +110,12 @@ exports.getBestRatingBooks = (req, res, next) => {
   Book.find()
     .sort({averageRating: -1})// Trier par note moyenne décroissante
     .limit(3) // Limiter les résultats à 3 livres
-    .then(bestRatedBook => res.status(200).json(bestRatedBook))
-    .catch(error => res.status(400).json({error}))
+    .then(bestRatedBook => {
+     console.log(bestRatedBook)
+     res.status(200).json(bestRatedBook)})
+    .catch(error => {
+      console.log(error)
+      res.status(400).json({error})})
 };
 
 exports.ratingBook = (req,res) => {
@@ -143,17 +147,18 @@ exports.ratingBook = (req,res) => {
     return book.save();
   })
   .then(updatedBook => {
-    console.log("book saved:", updatedBook);
+    // console.log("book saved:", updatedBook);
     //Crée un nouvel objet pour le livre mis à jour
-    const newBook={...updatedBook.toObject() };
-    newBook._id = updatedBook._id.toString();
+    // const newBook={...updatedBook.toObject() };
+    // newBook._id = updatedBook._id.toString();
       // Ajout champ `message` à la réponse pour transmettre le message à l'UI ???? je pense qu'il manque un truc coté client ???
-      res.status(200).json({ book: newBook, message: userMessage });
-      console.log(userMessage);
+    //  return res.status(200).json({ book: newBook, message: userMessage });
+    return res.status(200).json(updatedBook);
+      // console.log(userMessage);
     })
     .catch(error => {
       // Gestion des erreurs
       console.error(error);
-      res.status(500).json({ error: "Internal Server Error" });
+      return res.status(500).json({ error: "Internal Server Error" });
   });
 };

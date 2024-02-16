@@ -5,10 +5,10 @@ const auth = require("../middleware/auth");
 const multer = require("../middleware/multer-config");
 const booksCtrl = require("../controllers/books");
 
-router.get("/", booksCtrl.getAllBooks);
 // Ajout nouvelle route pour obtenir les 3 livres les mieux notés
 router.get("/bestrating", booksCtrl.getBestRatingBooks);
 router.get("/:id", booksCtrl.getOneBook);
+router.get("/", booksCtrl.getAllBooks);
 router.post("/", auth, multer, booksCtrl.createBook);
 router.put("/:id", auth, multer, booksCtrl.modifyBook)
 router.post("/:id/rating", auth, booksCtrl.ratingBook);
