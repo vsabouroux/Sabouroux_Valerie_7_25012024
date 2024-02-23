@@ -147,14 +147,9 @@ exports.ratingBook = (req,res) => {
     return book.save();
   })
   .then(updatedBook => {
-    // console.log("book saved:", updatedBook);
-    //Crée un nouvel objet pour le livre mis à jour
-    // const newBook={...updatedBook.toObject() };
-    // newBook._id = updatedBook._id.toString();
-      // Ajout champ `message` à la réponse pour transmettre le message à l'UI ???? je pense qu'il manque un truc coté client ???
-    //  return res.status(200).json({ book: newBook, message: userMessage });
+
     return res.status(200).json(updatedBook);
-      // console.log(userMessage);
+
     })
     .catch(error => {
       // Gestion des erreurs

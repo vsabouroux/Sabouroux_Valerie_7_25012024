@@ -52,7 +52,7 @@ function Book() {
       return;
     }
     // eslint-disable-next-line no-restricted-globals, no-alert
-    const check = confirm('Etes vous sûr de vouloir supprimer ce livre ?');
+    const check = confirm('Etes-vous sûr de vouloir supprimer ce livre ?');
     if (check) {
       const del = await deleteBook(book.id);
       if (del) {
